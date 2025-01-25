@@ -9,7 +9,7 @@ import Infrastructure from "./pages/Infrastructure";
 import Quality from "./pages/Quality";
 import Product from "./pages/Product";
 import AdminDashboard from "./pages/AdminDashboard";
-// just text
+// just text 1.0
 function App() {
   const location = useLocation(); // Get the current location
 
