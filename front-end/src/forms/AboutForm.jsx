@@ -6,6 +6,7 @@ import MissionVisionComponent from "../components/MissionVisionComponent";
 import FetchManagement from "../services/AboutPage/FetchManagement";
 import Postaboutheading_content_image from "../services/AboutPage/Postmethods/PostAboutHeadingContentAndImage";
 import FetchCoreAndPrinciple from "../services/AboutPage/FetchCoreAndPrinciple";
+import fetchwhykeith from "../services/AboutPage/Whykeith";
 
 function AboutForm() {
   const [aboutData1, setAboutData1] = useState();
@@ -18,41 +19,38 @@ function AboutForm() {
   const [isEditing1, setIsEditing1] = useState(false);
   const [isEditing2, setIsEditing2] = useState(false);
   const [GetPrincipleData, SetPrincipleData] = useState([]);
-  const [GettingPrincipleAndcoreHeading1, SetGettingPrincipleAndcoreHeading1] =
-    useState();
-
+  const [whykeithdata, setwhykeithdata] = useState();
+  const [whykeithdatatitle, setwhykeithdatatitle] = useState(null);
+  const [whykeithdatacotent, setwhykeithdatacotent] = useState(null);
   const [videoPreview, setVideoPreview] = useState("");
   const [aboutImage, setAboutImage] = useState("");
-  const [whyusImage, setWhyusImage] = useState("");
 
-  // for form 1
   const handleInputChange1 = (e) => {
     const { name, value } = e.target;
     setAboutData1({ ...aboutData1, [name]: value });
   };
+
   const openEditing1 = () => {
-    setIsEditing1(true); // Enable edit mode
+    setIsEditing1(true);
   };
+
   function closeEditing1() {
     setIsEditing1(false);
   }
-  // onchange of image of aboutus
+
   function handleimagechange(e) {
-    console.log("e");
     e.preventDefault();
     const files = e.target.files[0];
     SetAboutFile(files);
-    // Declare `files` properly
     if (files) {
       const fileurl = URL.createObjectURL(files);
       setAboutimageprev(fileurl);
     }
   }
 
-  //posting about heading image content
   const handleSubmit1 = async (e) => {
     e.preventDefault();
-    setIsEditing1(false); // Save and exit edit mode
+    setIsEditing1(false);
 
     const formData = new FormData();
     formData.append("header", AboutHeading);
@@ -66,350 +64,197 @@ function AboutForm() {
       console.error("Error during posting:", error);
     }
   };
-  // for form 2
-  const handleInputChange2 = (e) => {
-    const { name, value } = e.target;
-    setAboutData2({ ...aboutData2, [name]: value });
-  };
-  const openEditing2 = () => {
-    setIsEditing2(true); // Enable edit mode
-  };
-  function closeEditing2() {
-    setIsEditing2(false);
-  }
-  const handleSubmit2 = (e) => {
-    e.preventDefault();
-    setIsEditing2(false); // Save and exit edit mode
-    console.log("Submitted data:", aboutData2);
-    // Add API logic to save data
-  };
-
-  function previewWhyUs(e) {
-    const files = e.target.files[0];
-    console.log("file", files);
-    if (files) {
-      const fileurl = URL.createObjectURL(files);
-      setWhyusImage(fileurl);
-    }
-  }
-
-  // for fetching about
-  async function fetchingAbout() {
-    try {
-      const get = await FetchAboutHeading();
-      console.log("getting about heading section", get);
-      setAboutData1(get);
-      setAboutHeading(get.header);
-      setAboutContent(get.content);
-      if (get.image) {
-        setAboutImage(get.image);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async function fetchingManagement() {
-    try {
-      const get = await FetchManagement();
-      console.log("getting management section", get);
-      setAboutData1(get);
-      if (get.image) {
-        setAboutImage(get.image);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  function previewAboutImage(e) {
-    const files = e.target.files[0];
-    console.log("file", files);
-    if (files) {
-      const fileurl = URL.createObjectURL(files);
-      setAboutImage(fileurl);
-    }
-  }
-
-  const handleVideoUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const fileUrl = URL.createObjectURL(file); // Create a preview URL for the uploaded video
-      setVideoPreview(fileUrl);
-    }
-  };
-
-  // for fetching history
-  async function fetchingHistory() {
-    try {
-      const get = await Fetchhistoryall();
-      console.log("getting about history", get);
-      setHistoryData(get);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  // fetching principle and core
-  async function Fetchcoreandprinciple() {
-    try {
-      const res = await FetchCoreAndPrinciple();
-      console.log("herlro", res);
-      SetPrincipleData(res);
-    } catch (error) {
-      console.log("error", error);
-    }
-  }
-  useEffect(() => {
-    Fetchcoreandprinciple();
-  }, []);
 
   useEffect(() => {
+    async function fetchingAbout() {
+      try {
+        const get = await FetchAboutHeading();
+        setAboutData1(get);
+        setAboutHeading(get.header);
+        setAboutContent(get.content);
+        if (get.image) {
+          setAboutImage(get.image);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    async function fetchingHistory() {
+      try {
+        const get = await Fetchhistoryall();
+        setHistoryData(get);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    async function Fetchcoreandprinciple() {
+      try {
+        const res = await FetchCoreAndPrinciple();
+        SetPrincipleData(res);
+      } catch (error) {
+        console.log("error", error);
+      }
+    }
+
+    async function fetchkeith() {
+      try {
+        const get = await fetchwhykeith();
+        if (get && get.length > 0) {
+          const firstItem = get[0];
+          setwhykeithdata(firstItem);
+          setwhykeithdatatitle(firstItem.Title);
+          setwhykeithdatacotent(firstItem.description);
+        }
+      } catch (error) {
+        console.log("error", error);
+      }
+    }
+
     fetchingAbout();
     fetchingHistory();
+    Fetchcoreandprinciple();
+    fetchkeith();
   }, []);
 
   return (
-    <main className="p-4 sm:p-6 bg-gray-100 min-h-screen">
-      {/* Form Container */}
-      <div className="bg-white shadow-2xl rounded-2xl overflow-hidden w-full max-w-5xl mx-auto">
-        <h2 className="text-3xl font-bold p-6 bg-gradient-to-r from-blue-500 to-blue-700 text-white text-center">
-          Home
-        </h2>
-
+    <main className="p-4 sm:p-6 bg-gradient-to-br from-gray-100 via-white to-gray-50 min-h-screen">
+    <div className="bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-6xl mx-auto">
+      <h2 className="text-2xl sm:text-4xl font-bold p-4 sm:p-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-center">
+        About Page Management
+      </h2>
+  
+      <div className="p-4 sm:p-6 space-y-8">
         {/* About Section */}
-        <div className="border-b-2 border-gray-300">
-          <h2 className="text-xl p-4 text-gray-800 font-semibold underline decoration-blue-500 decoration-2">
-            About Section
-          </h2>
-          <form className="space-y-6 p-6" onSubmit={handleSubmit1}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* About Heading */}
+        <section className="border-b pb-6">
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">About Section</h3>
+          <form className="space-y-6" onSubmit={handleSubmit1}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  About Heading
-                </label>
+                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Heading</label>
                 <input
                   type="text"
                   value={AboutHeading}
                   onChange={(e) => setAboutHeading(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter heading"
                   disabled={!isEditing1}
                 />
               </div>
-
-              {/* About Description */}
+  
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  About Description
-                </label>
-                <input
-                  type="text"
+                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Description</label>
+                <textarea
                   value={AboutContent}
                   onChange={(e) => setAboutContent(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter description"
+                  rows={3}
                   disabled={!isEditing1}
                 />
               </div>
-
-              {/* About Image */}
+  
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  About Image
-                </label>
+                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Image</label>
                 <input
                   type="file"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
                   onChange={handleimagechange}
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   disabled={!isEditing1}
                 />
                 {Aboutimageprev && (
-                  <div className="mt-4">
-                    <img
-                      src={Aboutimageprev}
-                      alt="Year Background"
-                      className="w-full h-auto rounded-lg shadow-md"
-                    />
-                  </div>
+                  <img
+                    src={Aboutimageprev}
+                    alt="Preview"
+                    className="mt-4 w-full h-auto rounded-lg shadow-md"
+                  />
                 )}
               </div>
             </div>
-
-            {/* Submit & Cancel Buttons */}
+  
             {isEditing1 && (
-              <div className="flex justify-start space-x-4 mt-6">
+              <div className="flex flex-wrap justify-start gap-2">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  Submit
+                  Save
                 </button>
                 <button
                   type="button"
                   onClick={closeEditing1}
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
                   Cancel
                 </button>
               </div>
             )}
-          </form>
-
-          {/* Edit Button */}
-          {!isEditing1 && (
-            <div className="p-4">
+  
+            {!isEditing1 && (
               <button
                 type="button"
-                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
                 onClick={openEditing1}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
                 Edit
               </button>
-            </div>
-          )}
-        </div>
-
-        {/* History Section */}
-        <div className="border-b-2 border-gray-300">
-          <h2 className="text-xl p-4 text-gray-800 font-semibold underline decoration-blue-500 decoration-2">
-            History
-          </h2>
-          <form className="space-y-6 p-6" onSubmit={handleSubmit2}>
-            {historyData?.map((data) => (
-              <HistoryForm key={data._id} data={data} isEditing2={isEditing2} />
-            ))}
-          </form>
-        </div>
-
-        {/* priciples and core values */}
-        <div className="border-b-2 border-gray-300">
-          <h2 className="text-xl p-4 text-gray-800 font-semibold underline decoration-blue-500 decoration-2">
-            Principles & core values
-          </h2>
-          <form className="space-y-6 p-6" onSubmit={handleSubmit1}>
-            {GetPrincipleData?.map((item) => (
-              <MissionVisionComponent
-                key={item.id}
-                data={item} // Add a unique key if available
-                title={item.title}
-                description={item.description}
-                image={item.image}
-              />
-            ))}
-          </form>
-
-          {/* Edit Button */}
-          {/* {!isEditing1 && (
-              <div className="p-4">
-                <button
-                  type="button"
-                  className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
-                  onClick={openEditing1}
-                >
-                  Edit
-                </button>
-              </div>
-            )} */}
-        </div>
-
-        {/* Why keith */}
-        <div className="border-b-2 border-gray-300">
-          <h2 className="text-xl p-4 text-gray-800 font-semibold underline decoration-blue-500 decoration-2">
-            Why us?
-          </h2>
-          <form className="space-y-6 p-6" onSubmit={handleSubmit1}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/*  Heading */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Heading
-                </label>
-                <input
-                  type="text"
-                  name="header"
-                  value={aboutData1?.header || ""}
-                  onChange={handleInputChange1}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-                  placeholder="Enter heading"
-                  disabled={!isEditing2}
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Heading Description
-                </label>
-                <input
-                  type="text"
-                  name="content"
-                  value={aboutData1?.content || ""}
-                  onChange={handleInputChange1}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-                  placeholder="Enter description"
-                  disabled={!isEditing2}
-                />
-              </div>
-
-              {/* hwy usImage */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Heading Image
-                </label>
-                <input
-                  type="file"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-                  onChange={previewWhyUs}
-                  disabled={!isEditing2}
-                />
-                {whyusImage && (
-                  <div className="mt-4">
-                    <img
-                      src={whyusImage}
-                      alt="Year Background"
-                      className="w-full h-auto rounded-lg shadow-md"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Submit & Cancel Buttons */}
-            {isEditing2 && (
-              <div className="flex justify-start space-x-4 mt-6">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Submit
-                </button>
-                <button
-                  type="button"
-                  onClick={closeEditing2}
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  Cancel
-                </button>
-              </div>
             )}
           </form>
-
-          {/* Edit Button */}
-          {!isEditing2 && (
-            <div className="p-4">
-              <button
-                type="button"
-                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 shadow-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500"
-                onClick={openEditing2}
-              >
-                Edit
-              </button>
+        </section>
+  
+        {/* History Section */}
+        <section className="border-b pb-6">
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">History</h3>
+          {historyData?.map((data) => (
+            <HistoryForm key={data._id} data={data} isEditing2={isEditing2} />
+          ))}
+        </section>
+  
+        {/* Principles & Core Values Section */}
+        <section className="border-b pb-6">
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Principles & Core Values</h3>
+          {GetPrincipleData?.map((item) => (
+            <MissionVisionComponent
+              key={item.id}
+              data={item}
+              title={item.title}
+              description={item.description}
+              image={item.image}
+            />
+          ))}
+        </section>
+  
+        {/* Why Us Section */}
+        <section>
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Why Us?</h3>
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Heading</label>
+                <input
+                  type="text"
+                  value={whykeithdatatitle}
+                  onChange={(e) => setwhykeithdatatitle(e.target.value)}
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Description</label>
+                <textarea
+                  value={whykeithdatacotent}
+                  onChange={(e) => setwhykeithdatacotent(e.target.value)}
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={3}
+                />
+              </div>
             </div>
-          )}
-        </div>
+          </form>
+        </section>
       </div>
-    </main>
+    </div>
+  </main>
+  
   );
 }
 
