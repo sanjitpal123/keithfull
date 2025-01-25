@@ -9,7 +9,7 @@ import Testimonial from "../components/Testimonial"
 
 function Home() {
     return (
-        <div>
+        <div className="flex flex-col items-center ">
 
        
             {/* <NavBar></NavBar> */}

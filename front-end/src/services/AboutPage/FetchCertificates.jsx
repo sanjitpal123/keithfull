@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-async function Fetchallproduct() {
+async function FetchCertificates() {
     try {
-        const res = await axios.get('http://localhost:3000/api/product/getallproducts', {
+        const res = await axios.get('http://localhost:3000/api/certificate/getall', {
             withCredentials: true,  // Ensure cookies are sent with the request
         });
         
@@ -14,4 +14,4 @@ async function Fetchallproduct() {
     }
 }
 
-export default Fetchallproduct;
+export default FetchCertificates;

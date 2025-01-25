@@ -1,4 +1,4 @@
-import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import React, { useState } from "react";
 import HomeForm from "../forms/HomeForm";
 import AboutForm from "../forms/AboutForm";
@@ -8,10 +8,13 @@ import QualityForm from "../forms/QualityForm";
 
 function AdminDashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate()
-  function gotoHome(){
-    navigate("/")
+  const navigate = useNavigate();
+  const location = useLocation(); // Get current route
+
+  function gotoHome() {
+    navigate("/");
   }
+
   return (
     <div className="min-h-screen bg-gray-800 flex">
       {/* Sidebar */}
@@ -40,11 +43,13 @@ function AdminDashboard() {
         </div>
 
         <nav>
-          <ul>
+          <ul className="space-y-2">
             <li>
               <Link
                 to="/admin/home"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+                className={`block py-2 px-4 rounded hover:bg-gray-700 ${
+                  location.pathname === "/admin/home" ? "bg-gray-700" : ""
+                }`}
               >
                 Home
               </Link>
@@ -52,7 +57,9 @@ function AdminDashboard() {
             <li>
               <Link
                 to="/admin/about"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+                className={`block py-2 px-4 rounded hover:bg-gray-700 ${
+                  location.pathname === "/admin/about" ? "bg-gray-700" : ""
+                }`}
               >
                 About Us
               </Link>
@@ -60,7 +67,9 @@ function AdminDashboard() {
             <li>
               <Link
                 to="/admin/products"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+                className={`block py-2 px-4 rounded hover:bg-gray-700 ${
+                  location.pathname === "/admin/products" ? "bg-gray-700" : ""
+                }`}
               >
                 Products
               </Link>
@@ -68,7 +77,9 @@ function AdminDashboard() {
             <li>
               <Link
                 to="/admin/infrastructure"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+                className={`block py-2 px-4 rounded hover:bg-gray-700 ${
+                  location.pathname === "/admin/infrastructure" ? "bg-gray-700" : ""
+                }`}
               >
                 Infrastructure
               </Link>
@@ -76,7 +87,9 @@ function AdminDashboard() {
             <li>
               <Link
                 to="/admin/quality"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+                className={`block py-2 px-4 rounded hover:bg-gray-700 ${
+                  location.pathname === "/admin/quality" ? "bg-gray-700" : ""
+                }`}
               >
                 Quality
               </Link>
@@ -84,7 +97,9 @@ function AdminDashboard() {
             <li>
               <Link
                 to="/admin/contact"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+                className={`block py-2 px-4 rounded hover:bg-gray-700 ${
+                  location.pathname === "/admin/contact" ? "bg-gray-700" : ""
+                }`}
               >
                 Contact
               </Link>
@@ -115,7 +130,6 @@ function AdminDashboard() {
           </button>
         </div>
       </aside>
-
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">

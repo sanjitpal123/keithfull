@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Fetchallproduct from "../services/ProductPage/FetchProduct";
+import FetchProducts from "../services/ProductPage/FetchProducts";
 
 function HomeProducts() {
   const [allproducts, setallproducts] = useState([]);
 
   async function fetchProduct() {
     try {
-      const get = await Fetchallproduct();
+      const get = await FetchProducts();
       console.log("getproducts", get.getall);
       setallproducts(get.getall.slice(0, 3)); // Limit to 3 products
     } catch (error) {

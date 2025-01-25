@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Fetchallproduct from "../services/Productpage/FetchProduct";
+import FetchProducts from "../services/ProductPage/FetchProducts";
 
 function ProductsContainer() {
   const [allproducts, setallproducts] = useState([]);
@@ -12,7 +12,7 @@ function ProductsContainer() {
 
   async function fetchProduct() {
     try {
-      const get = await Fetchallproduct();
+      const get = await FetchProducts();
       console.log("getproducts", get.getall);
       setallproducts(get.getall);
     } catch (error) {
