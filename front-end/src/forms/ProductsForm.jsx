@@ -66,17 +66,21 @@ function ProductsForm() {
     setNewFields([...newFields, { title: "", description: "", image: "" }]);
   };
 
+  const hasChanges = (fieldData) => {
+    return fieldData.title || fieldData.description || fieldData.image;
+  };
+
   return (
     <main className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Form container */}
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-4xl mx-auto">
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-6xl mx-auto">
         <h2 className="text-2xl font-semibold p-4 bg-gray-800 text-white">Products</h2>
         <form className="space-y-6 p-6">
-          {/* Existing Products */}
-          <div className="space-y-6">
+          {/* Existing Products (Grid layout for better organization) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.isArray(products) &&
               products.map((product, index) => (
-                <div key={index} className="space-y-6 border-b pb-6">
+                <div key={index} className="space-y-6 p-6 border border-gray-300 rounded-lg shadow-md">
                   <div>
                     <label className="block text-gray-700 font-semibold mb-2">Title</label>
                     <input
@@ -115,24 +119,26 @@ function ProductsForm() {
                     )}
                   </div>
 
-                  {/* Submit button for each product */}
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => handleProductSubmit(index)}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      Submit Product {index + 1}
-                    </button>
-                  </div>
+                  {/* Submit button for each product only if changes are made */}
+                  {hasChanges(product) && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleProductSubmit(index)}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        Submit Product {index + 1}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>
 
-          {/* New Fields */}
-          <div className="space-y-6">
+          {/* New Fields (For adding new products) */}
+          <div className="space-y-6 mt-8">
             {newFields.map((field, index) => (
-              <div key={index} className="space-y-6 border-b pb-6">
+              <div key={index} className="space-y-6 p-6 border border-gray-300 rounded-lg shadow-md">
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">Title</label>
                   <input
@@ -171,16 +177,18 @@ function ProductsForm() {
                   )}
                 </div>
 
-                {/* Submit button for new product */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => handleProductSubmit(index, true)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    Submit New Product {index + 1}
-                  </button>
-                </div>
+                {/* Submit button for new product only if changes are made */}
+                {hasChanges(field) && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => handleProductSubmit(index, true)}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      Submit New Product {index + 1}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -193,12 +201,10 @@ function ProductsForm() {
           >
             Add New Product
           </button>
-          {/* hi */}
-          {/* hello */}
         </form>
       </div>
     </main>
   );
 }
-
+// end
 export default ProductsForm;
