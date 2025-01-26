@@ -1,260 +1,338 @@
+import React from 'react';
 import { useEffect, useState } from "react";
+import { 
+  Building2, 
+  History, 
+  Image as ImageIcon,
+  Loader2,
+  PencilLine,
+  Save,
+  X as XIcon,
+  Heart,
+  BookOpen,
+  HelpCircle,
+  Trash2
+} from "lucide-react";
 import FetchAboutHeading from "../services/AboutPage/FetchAboutHeading";
 import Fetchhistoryall from "../services/AboutPage/FetchHistory";
 import HistoryForm from "../components/HistoryForm";
 import MissionVisionComponent from "../components/MissionVisionComponent";
-import FetchManagement from "../services/AboutPage/FetchManagement";
-import Postaboutheading_content_image from "../services/AboutPage/Postmethods/PostAboutHeadingContentAndImage";
 import FetchCoreAndPrinciple from "../services/AboutPage/FetchCoreAndPrinciple";
 import fetchwhykeith from "../services/AboutPage/Whykeith";
+import Postaboutheading_content_image from "../services/AboutPage/Postmethods/PostAboutHeadingContentAndImage";
 
 function AboutForm() {
-  const [aboutData1, setAboutData1] = useState();
-  const [AboutHeading, setAboutHeading] = useState();
-  const [AboutContent, setAboutContent] = useState();
-  const [Aboutimageprev, setAboutimageprev] = useState(null);
-  const [AboutFile, SetAboutFile] = useState();
-  const [aboutData2, setAboutData2] = useState();
-  const [historyData, setHistoryData] = useState();
-  const [isEditing1, setIsEditing1] = useState(false);
-  const [isEditing2, setIsEditing2] = useState(false);
-  const [GetPrincipleData, SetPrincipleData] = useState([]);
-  const [whykeithdata, setwhykeithdata] = useState();
-  const [whykeithdatatitle, setwhykeithdatatitle] = useState(null);
-  const [whykeithdatacotent, setwhykeithdatacotent] = useState(null);
-  const [videoPreview, setVideoPreview] = useState("");
-  const [aboutImage, setAboutImage] = useState("");
+  const [aboutHeading, setAboutHeading] = useState("");
+  const [aboutContent, setAboutContent] = useState("");
+  const [aboutImage, setAboutImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleInputChange1 = (e) => {
-    const { name, value } = e.target;
-    setAboutData1({ ...aboutData1, [name]: value });
-  };
+  const [historyData, setHistoryData] = useState([]);
+  const [principlesData, setPrinciplesData] = useState([]);
+  const [whyUsData, setWhyUsData] = useState({
+    title: "",
+    description: "",
+  });
 
-  const openEditing1 = () => {
-    setIsEditing1(true);
-  };
-
-  function closeEditing1() {
-    setIsEditing1(false);
-  }
-
-  function handleimagechange(e) {
-    e.preventDefault();
-    const files = e.target.files[0];
-    SetAboutFile(files);
-    if (files) {
-      const fileurl = URL.createObjectURL(files);
-      setAboutimageprev(fileurl);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    console.log('files',file)
+    setAboutImage(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
     }
-  }
+  };
 
-  const handleSubmit1 = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsEditing1(false);
-
+    setIsSaving(true);
+    console.log('submit')
+    
     const formData = new FormData();
-    formData.append("header", AboutHeading);
-    formData.append("content", AboutContent);
-    formData.append("image", AboutFile);
+    formData.append("header", aboutHeading);
+    formData.append("content", aboutContent);
+    console.log('aboutimage',aboutImage)
+    if (aboutImage) {
+      formData.append("image", aboutImage);
+    }
+    console.log('formdata',formData)
 
     try {
       const response = await Postaboutheading_content_image(formData);
-      console.log("Posting response:", response);
+      console.log("Form submitted successfully:", response);
+      setIsEditing(false);
     } catch (error) {
-      console.error("Error during posting:", error);
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async (id, type) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    
+    setIsDeleting(true);
+    try {
+      // Add your delete API calls here based on the type
+      // Example:
+      // if (type === 'history') await DeleteHistory(id);
+      // if (type === 'principle') await DeletePrinciple(id);
+      
+      // Update local state after successful deletion
+      if (type === 'history') {
+        setHistoryData(prev => prev.filter(item => item._id !== id));
+      } else if (type === 'principle') {
+        setPrinciplesData(prev => prev.filter(item => item.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   useEffect(() => {
-    async function fetchingAbout() {
+    async function fetchData() {
+      setIsLoading(true);
       try {
-        const get = await FetchAboutHeading();
-        setAboutData1(get);
-        setAboutHeading(get.header);
-        setAboutContent(get.content);
-        if (get.image) {
-          setAboutImage(get.image);
+        const aboutData = await FetchAboutHeading();
+        setAboutHeading(aboutData.header);
+        setAboutContent(aboutData.content);
+        setImagePreview(aboutData.image || "");
+
+        const history = await Fetchhistoryall();
+        setHistoryData(history);
+
+        const principles = await FetchCoreAndPrinciple();
+        setPrinciplesData(principles);
+
+        const whyKeith = await fetchwhykeith();
+        if (whyKeith && whyKeith.length > 0) {
+          setWhyUsData({
+            title: whyKeith[0]?.Title || "",
+            description: whyKeith[0]?.description || "",
+          });
         }
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
-
-    async function fetchingHistory() {
-      try {
-        const get = await Fetchhistoryall();
-        setHistoryData(get);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    async function Fetchcoreandprinciple() {
-      try {
-        const res = await FetchCoreAndPrinciple();
-        SetPrincipleData(res);
-      } catch (error) {
-        console.log("error", error);
-      }
-    }
-
-    async function fetchkeith() {
-      try {
-        const get = await fetchwhykeith();
-        if (get && get.length > 0) {
-          const firstItem = get[0];
-          setwhykeithdata(firstItem);
-          setwhykeithdatatitle(firstItem.Title);
-          setwhykeithdatacotent(firstItem.description);
-        }
-      } catch (error) {
-        console.log("error", error);
-      }
-    }
-
-    fetchingAbout();
-    fetchingHistory();
-    Fetchcoreandprinciple();
-    fetchkeith();
+    fetchData();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
   return (
-    <main className="p-4 sm:p-6 bg-gradient-to-br from-gray-100 via-white to-gray-50 min-h-screen">
-    <div className="bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-6xl mx-auto">
-      <h2 className="text-2xl sm:text-4xl font-bold p-4 sm:p-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-center">
-        About Page Management
-      </h2>
-  
-      <div className="p-4 sm:p-6 space-y-8">
-        {/* About Section */}
-        <section className="border-b pb-6">
-          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">About Section</h3>
-          <form className="space-y-6" onSubmit={handleSubmit1}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Heading</label>
-                <input
-                  type="text"
-                  value={AboutHeading}
-                  onChange={(e) => setAboutHeading(e.target.value)}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter heading"
-                  disabled={!isEditing1}
-                />
-              </div>
-  
-              <div>
-                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Description</label>
-                <textarea
-                  value={AboutContent}
-                  onChange={(e) => setAboutContent(e.target.value)}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter description"
-                  rows={3}
-                  disabled={!isEditing1}
-                />
-              </div>
-  
-              <div>
-                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Image</label>
-                <input
-                  type="file"
-                  onChange={handleimagechange}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  disabled={!isEditing1}
-                />
-                {Aboutimageprev && (
-                  <img
-                    src={Aboutimageprev}
-                    alt="Preview"
-                    className="mt-4 w-full h-auto rounded-lg shadow-md"
+    <main className="px-1 sm:px-4 lg:px-8 py-2 sm:py-4 lg:py-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen w-full">
+      <div className="bg-white shadow-lg rounded-2xl overflow-hidden max-w-7xl mx-auto">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-2 py-3 sm:p-6 flex items-center justify-center gap-1.5 sm:gap-3">
+          <Building2 className="w-5 h-5 sm:w-8 sm:h-8 text-white flex-shrink-0" />
+          <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white truncate">
+            About Page Management
+          </h2>
+        </div>
+
+        <div className="px-2 py-3 sm:p-6 space-y-4 sm:space-y-10">
+          <section className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-1.5 sm:gap-2 border-b pb-2">
+              <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-indigo-600 flex-shrink-0" />
+              <h3 className="text-base sm:text-xl md:text-2xl font-semibold text-gray-800 truncate">
+                About Section
+              </h3>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5 sm:gap-2">
+                    <PencilLine className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                    Heading
+                  </label>
+                  <input
+                    type="text"
+                    value={aboutHeading}
+                    onChange={(e) => setAboutHeading(e.target.value)}
+                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 rounded-lg border ${
+                      !isEditing ? 'bg-gray-50' : 'bg-white'
+                    } border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-sm sm:text-base`}
+                    placeholder="Enter heading"
+                    disabled={!isEditing}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5 sm:gap-2">
+                    <PencilLine className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                    Description
+                  </label>
+                  <textarea
+                    value={aboutContent}
+                    onChange={(e) => setAboutContent(e.target.value)}
+                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 rounded-lg border ${
+                      !isEditing ? 'bg-gray-50' : 'bg-white'
+                    } border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-sm sm:text-base`}
+                    placeholder="Enter description"
+                    rows={3}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5 sm:gap-2">
+                    <ImageIcon className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                    Image
+                  </label>
+                  <input
+                    type="file"
+                    onChange={handleImageChange}
+                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 rounded-lg border ${
+                      !isEditing ? 'bg-gray-50' : 'bg-white'
+                    } border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-sm sm:text-base`}
+                    disabled={!isEditing}
+                  />
+                  {imagePreview && (
+                    <div className="mt-4 rounded-lg overflow-hidden shadow-lg">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-auto object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {isEditing ? (
+                  <>
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-3 sm:px-6 py-2 sm:py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                    >
+                      {isSaving ? (
+                        <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="flex items-center gap-1.5 px-3 sm:px-6 py-2 sm:py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 text-sm sm:text-base"
+                    >
+                      <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-1.5 px-3 sm:px-6 py-2 sm:py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 text-sm sm:text-base"
+                  >
+                    <PencilLine className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Edit
+                  </button>
                 )}
               </div>
+            </form>
+          </section>
+
+          <section className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <History className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 flex-shrink-0" />
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 truncate">
+                History
+              </h3>
             </div>
-  
-            {isEditing1 && (
-              <div className="flex flex-wrap justify-start gap-2">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={closeEditing1}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-  
-            {!isEditing1 && (
-              <button
-                type="button"
-                onClick={openEditing1}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                Edit
-              </button>
-            )}
-          </form>
-        </section>
-  
-        {/* History Section */}
-        <section className="border-b pb-6">
-          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">History</h3>
-          {historyData?.map((data) => (
-            <HistoryForm key={data._id} data={data} isEditing2={isEditing2} />
-          ))}
-        </section>
-  
-        {/* Principles & Core Values Section */}
-        <section className="border-b pb-6">
-          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Principles & Core Values</h3>
-          {GetPrincipleData?.map((item) => (
-            <MissionVisionComponent
-              key={item.id}
-              data={item}
-              title={item.title}
-              description={item.description}
-              image={item.image}
-            />
-          ))}
-        </section>
-  
-        {/* Why Us Section */}
-        <section>
-          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Why Us?</h3>
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Heading</label>
+            <div className="space-y-4 sm:space-y-6">
+              {historyData.map((data) => (
+                <HistoryForm 
+                  key={data._id} 
+                  data={data} 
+                  onDelete={() => handleDelete(data._id, 'history')}
+                  isDeleting={isDeleting}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 flex-shrink-0" />
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 truncate">
+                Principles & Core Values
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {principlesData.map((item) => (
+                <MissionVisionComponent
+                  key={item.id}
+                  data={item}
+                  title={item.title}
+                  description={item.description}
+                  image={item.image}
+                  onDelete={() => handleDelete(item.id, 'principle')}
+                  isDeleting={isDeleting}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 flex-shrink-0" />
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 truncate">
+                Why Us?
+              </h3>
+            </div>
+            <form className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Heading
+                </label>
                 <input
                   type="text"
-                  value={whykeithdatatitle}
-                  onChange={(e) => setwhykeithdatatitle(e.target.value)}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={whyUsData.title}
+                  onChange={(e) =>
+                    setWhyUsData({ ...whyUsData, title: e.target.value })
+                  }
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-sm sm:text-base"
                 />
               </div>
-              <div>
-                <label className="block text-sm sm:text-base text-gray-700 font-medium mb-2">Description</label>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <textarea
-                  value={whykeithdatacotent}
-                  onChange={(e) => setwhykeithdatacotent(e.target.value)}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={whyUsData.description}
+                  onChange={(e) =>
+                    setWhyUsData({ ...whyUsData, description: e.target.value })
+                  }
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-sm sm:text-base"
                   rows={3}
                 />
               </div>
-            </div>
-          </form>
-        </section>
+            </form>
+          </section>
+        </div>
       </div>
-    </div>
-  </main>
-  
+    </main>
   );
 }
 

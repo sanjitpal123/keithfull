@@ -9,14 +9,22 @@ export const Aboutinhome = async (req, res) => {
 
     // Check if a document already exists
     const existingDocument = await aboutusinhomepage.findOne();
-    // Update the existing document
-    const uploaded = await cloudinary.uploader.upload(req.file.path);
-    fs.unlinkSync(req.file.path);
+
+    // Initialize variable for the image URL
+    let imageUrl = existingDocument ? existingDocument.image : null;
+
+    // If a new image is uploaded, upload it to Cloudinary
+    if (req.file) {
+      const uploaded = await cloudinary.uploader.upload(req.file.path);
+      fs.unlinkSync(req.file.path); // Delete the local file after uploading
+      imageUrl = uploaded.secure_url; // Use the newly uploaded image URL
+    }
+
+    // If the document exists, update it
     if (existingDocument) {
       const updated = await aboutusinhomepage.findByIdAndUpdate(
         existingDocument._id,
-        { header, content },
-        { image: uploaded.secure_url },
+        { header, content, image: imageUrl }, // Update with new or existing image
         { new: true } // Return the updated document
       );
 
@@ -33,11 +41,11 @@ export const Aboutinhome = async (req, res) => {
       });
     }
 
-    // Create a new document if none exists
+    // If no document exists, create a new one with or without an image
     const created = await aboutusinhomepage.create({
-       header :header,
-       content:content,
-       image: uploaded.secure_url
+      header,
+      content,
+      image: imageUrl, // Use the image URL (new or existing)
     });
 
     if (created) {
@@ -59,6 +67,7 @@ export const Aboutinhome = async (req, res) => {
     });
   }
 };
+
 
 export const GetAboutUs=async(req,res)=>{
   try{

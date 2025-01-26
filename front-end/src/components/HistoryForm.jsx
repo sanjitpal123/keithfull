@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Calendar, FileText, Save, X as XIcon, Loader2, Trash2 } from "lucide-react";
 import EditHistory from "../services/AboutPage/Postmethods/EditHistory";
 
-function HistoryForm({ data }) {
+function HistoryForm({ data, onDelete, isDeleting }) {
   const [isEditing2, setIsEditing2] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     date: data?.date || "",
     description: data?.description || "",
@@ -14,7 +16,6 @@ function HistoryForm({ data }) {
       ...prev,
       [name]: value,
     }));
-    setIsEditing2(true);
   };
 
   const closeEditing2 = () => {
@@ -23,58 +24,104 @@ function HistoryForm({ data }) {
   };
 
   const handleSubmit = async () => {
-    console.log("Submitted Data:", formData);
-    const res = await EditHistory(formData, data._id);
-    setIsEditing2(false);
+    setIsSaving(true);
+    try {
+      const res = await EditHistory(formData, data._id);
+      console.log("Response:", res);
+      setIsEditing2(false);
+    } catch (error) {
+      console.error("Error updating history:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!data?.date) return null;
 
   return (
-    <div className="p-4 bg-gradient-to-r from-blue-50 via-white to-blue-50 rounded-lg shadow-md">
-    
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Year</label>
+    <div className="px-2 py-3 sm:p-6 bg-gradient-to-r from-blue-50 via-white to-blue-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
+        {/* Year Input */}
+        <div className="space-y-1.5 sm:space-y-2">
+          <label className="flex items-center gap-1.5 sm:gap-2 text-gray-700 font-medium text-sm sm:text-base">
+            <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            Year
+          </label>
           <input
             type="text"
             name="date"
             value={formData.date}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm"
+            onClick={() => setIsEditing2(true)}
+            className={`w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm transition-all duration-200 text-sm sm:text-base ${
+              !isEditing2 ? 'bg-gray-50' : 'bg-white'
+            }`}
             placeholder="Enter year (e.g., 2023)"
           />
         </div>
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">History Description</label>
+
+        {/* Description Input */}
+        <div className="space-y-1.5 sm:space-y-2">
+          <label className="flex items-center gap-1.5 sm:gap-2 text-gray-700 font-medium text-sm sm:text-base">
+            <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            History Description
+          </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm"
+            onClick={() => setIsEditing2(true)}
+            className={`w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm transition-all duration-200 text-sm sm:text-base ${
+              !isEditing2 ? 'bg-gray-50' : 'bg-white'
+            }`}
             placeholder="Enter history description..."
             rows={4}
-          ></textarea>
+          />
         </div>
       </div>
-      {isEditing2 && (
-        <div className="flex justify-center space-x-3 mt-4">
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap justify-end gap-2 sm:gap-3 mt-3 sm:mt-4">
+        {isEditing2 ? (
+          <>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              type="button"
+              onClick={closeEditing2}
+              className="flex items-center gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-200 text-sm sm:text-base"
+            >
+              <XIcon className="w-4 h-4" />
+              Cancel
+            </button>
+          </>
+        ) : (
           <button
             type="button"
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="flex items-center gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
           >
-            Submit
+            {isDeleting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
-          <button
-            type="button"
-            onClick={closeEditing2}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
