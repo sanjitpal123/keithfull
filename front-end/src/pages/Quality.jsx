@@ -14,13 +14,13 @@ function Quality() {
     }
   }
   const allphysicaltesting = QualityData?.filter(
-    (item) => item.typeofproduct === "physical testing"
+    (item) => item.typeofproduct === "Physical Testing"
   );
   const welcemicalmachine = QualityData?.filter(
     (item) => item.typeofproduct === "Wet Chemical Laboratory Equipment"
   );
   const sandtestingmachine = QualityData?.filter(
-    (item) => item.typeofproduct === "SAND TESTING EQUIPMENT"
+    (item) => item.typeofproduct=== "SAND TESTING EQUIPMENT"
   );
   useEffect(() => {
     fetchquality();

@@ -1,6 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import FetchCertificates from "../services/AboutPage/FetchCertificates";
 
 const Awards = () => {
+  const [certifices, setcertificetes] = useState([]);
+  
+  async function Fetchallcertificates() {
+    try {
+      const getting = await FetchCertificates();
+      console.log("Fetched Certificates:", getting);
+      setcertificetes(getting);
+    } catch (error) {
+      console.log("Error fetching certificates:", error);
+    }
+  }
+
+  useEffect(() => {
+    Fetchallcertificates();
+  }, []);
+
   // State to manage modal visibility and content
   const [modal, setModal] = useState({
     isOpen: false,
@@ -10,10 +27,10 @@ const Awards = () => {
   });
 
   // Function to open the modal with the clicked image's content
-  const openModal = (imageSrc, title, description) => {
+  const openModal = (image, title, description) => {
     setModal({
       isOpen: true,
-      imageSrc,
+      image,
       title,
       description,
     });
@@ -43,58 +60,27 @@ const Awards = () => {
         {/* Image container */}
         <div className="w-full h-[200px] md:h-[300px] px-5 py-4 rounded-lg border-2 lg:h-[400px] overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 lg:gap-6">
-            <img
-              src="https://img.freepik.com/free-vector/flat-certificate-template_52683-61537.jpg"
-              alt="AWARD 1"
-              className="w-full hover:cursor-pointer h-auto rounded-lg shadow-lg object-cover"
-              onClick={() =>
-                openModal(
-                  "https://img.freepik.com/free-vector/flat-certificate-template_52683-61537.jpg",
-                  "AWARDED MOST PREFERRED SUPPLIER BY MAJOR EUROPEAN CUSTOMER",
-                  `WE WERE HONORED WITH THE ‘MOST PREFERRED SUPPLIER’ AWARD BY ONE OF
-                   OUR MAJOR EUROPEAN CUSTOMERS. THIS PRESTIGIOUS RECOGNITION REFLECTS
-                   OUR COMMITMENT TO DELIVERING EXCEPTIONAL QUALITY, RELIABILITY, AND
-                   CUSTOMER SATISFACTION IN THE CASTING MANUFACTURING INDUSTRY.`
-                )
-              }
-            />
-            <img
-              src="https://img.freepik.com/free-vector/gradient-elegant-certificate-template_23-2148973721.jpg"
-              alt="AWARD 2"
-              className="w-full hover:cursor-pointer h-auto rounded-lg shadow-lg object-cover"
-              onClick={() =>
-                openModal(
-                  "https://img.freepik.com/free-vector/gradient-elegant-certificate-template_23-2148973721.jpg",
-                  "AWARD 2 TITLE",
-                  "Description for Award 2 goes here."
-                )
-              }
-            />
-            <img
-              src="https://img.freepik.com/free-vector/certificate-template-with-elegant-elements_23-2148568461.jpg"
-              alt="AWARD 3"
-              className="w-full hover:cursor-pointer h-auto rounded-lg shadow-lg object-cover"
-              onClick={() =>
-                openModal(
-                  "https://img.freepik.com/free-vector/certificate-template-with-elegant-elements_23-2148568461.jpg",
-                  "AWARD 3 TITLE",
-                  "Description for Award 3 goes here."
-                )
-              }
-            />
-            <img
-              src="https://img.freepik.com/free-vector/certificate-template-with-elegant-elements_23-2148568461.jpg"
-              alt="AWARD 3"
-              className="w-full hover:cursor-pointer h-auto rounded-lg shadow-lg object-cover"
-              onClick={() =>
-                openModal(
-                  "https://img.freepik.com/free-vector/certificate-template-with-elegant-elements_23-2148568461.jpg",
-                  "AWARD 3 TITLE",
-                  "Description for Award 3 goes here."
-                )
-              }
-            />
-            {/* Add more images as needed */}
+            {certifices.length > 0 ? (
+              certifices.map((certificate, index) => (
+                <img
+                  key={index}
+                  src={certificate.image}
+                  alt={certificate.title || `Award ${index + 1}`}
+                  className="w-full hover:cursor-pointer h-[90%] rounded-lg shadow-lg object-cover"
+                  onClick={() =>
+                    openModal(
+                      certificate.image,
+                      certificate.title,
+                      certificate.description
+                    )
+                  }
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-600 col-span-full">
+                No certificates available to display.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -122,7 +108,7 @@ const Awards = () => {
             <div>
               <img
                 id="modal-image"
-                src={modal.imageSrc}
+                src={modal.image}
                 alt={modal.title}
                 className="w-full h-auto rounded-lg shadow-lg object-cover"
               />

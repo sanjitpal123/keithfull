@@ -1,7 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import FetchCertificates from '../services/AboutPage/FetchCertificates';
 
 const HomeAwards = () => {
+  const[certificatedata, setcertificatedata]=useState([])
+  async function Fetchallcertificates()
+  {
+    try{
+      const getting=await FetchCertificates();
+      console.log('getting',getting);
+      setcertificatedata(getting);
+
+    }
+    catch(error){
+      console.log('error');
+
+    }
+
+  }
+  useEffect(()=>{
+    Fetchallcertificates();
+  },[])
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // List of slides (images)
@@ -50,7 +70,7 @@ const HomeAwards = () => {
           {/* Image Section */}
           <div className="slider relative w-full h-[200px] mx-auto sm:h-[300px] lg:w-[800px] lg:h-[400px] overflow-hidden rounded-lg shadow-lg">
             {/* Slides */}
-            {slides.map((slide, index) => (
+            {certificatedata?.map((slide, index) => (
               <div
                 key={index}
                 className={`slide w-full h-full absolute top-0 left-0 transition-all duration-1000 ease-in-out ${
@@ -58,7 +78,7 @@ const HomeAwards = () => {
                 }`}
               >
                 <img
-                  src={slide.src}
+                  src={slide.image}
                   alt={slide.alt}
                   className="w-full h-full object-contain"
                 />
